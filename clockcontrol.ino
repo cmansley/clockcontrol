@@ -229,39 +229,39 @@ void loop() {
       pixels.show();
     }
   }
+  // Get time from real time clock.
   t = rtc.getTime();
   hr = t.hour;
   mnt = t.min;
   sc = t.sec;
 
-  pixels.setPixelColor(sc, pixels.Color(s_red_deger, s_green_deger, s_blue_deger));
-  pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
-  pixels.show();
+  // Convert military 24 hour time to 12 hours.
+  hr = (hr + 11) % 12 + 1;
 
-  for (int i = 0; i < 12; i++) {
-    if (i == hr)
-    {
-      i++;
-    }
-    pixels2.setPixelColor(i, pixels2.Color(0, 255, 0));
-  }
-  pixels2.show();
-  if (hr >= 12) {
-    hr = hr - 12;
-  }
-  pixels2.setPixelColor(hr, pixels2.Color(h_red_deger, h_green_deger, h_blue_deger));
-  pixels2.show();
-  delay(10);
-  pixels.setPixelColor(sc, pixels.Color(0, 0, 0));
+  // Turn off all pixels.
   for (int k = 0; k < 60; k++) {
     pixels.setPixelColor(k, pixels.Color(0, 0, 0));
   }
+
+  // Turn on every 4th mark around outside.
   for (int k = 0; k < 60; k++) {
     pixels.setPixelColor(k, pixels.Color(25, 25, 255));
     k = k + 4;
   }
-  pixels.setPixelColor(mnt, pixels.Color(0, 0, 0));
+
+  // Set second and minute pixels to their color.
+  pixels.setPixelColor(sc, pixels.Color(s_red_deger, s_green_deger, s_blue_deger));
+  pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
   pixels.show();
+
+  // Set all hour pixels to color
+  for (int i = 0; i < 12; i++) {
+    pixels2.setPixelColor(i, pixels2.Color(0, 255, 0));
+  }
+
+  // Set the current hour to a different color.
+  pixels2.setPixelColor(hr, pixels2.Color(h_red_deger, h_green_deger, h_blue_deger));
+  pixels2.show();
 }
 
 void colorWipe(uint32_t c, uint8_t wait) {
