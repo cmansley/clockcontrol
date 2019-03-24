@@ -42,8 +42,6 @@ Adafruit_NeoPixel pixels2 = Adafruit_NeoPixel(12, PIN2, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip2 = Adafruit_NeoPixel(12, PIN2, NEO_GRB + NEO_KHZ800);
 
-int delayval = 10;
-
 void setup() {
   Serial.begin(9600);
   rtc.begin();
@@ -81,8 +79,8 @@ char hourSelectMode() {
     {
       hr--;
     }
-    // Convert military 24 hour time to 12 hours.
-    hr = (hr + 11) % 12 + 1;
+    // Convert time to 0-11.
+    hr = positive_modulo(hr, 12);
 
     // Flash display to indicate hour being set.
     updateHourPixels(Adafruit_NeoPixel::Color(h_red_deger, h_green_deger, h_blue_deger),
@@ -116,8 +114,8 @@ char minuteSelectMode() {
     {
       mnt--;
     }
-    // Enforce 0 to 59
-    mnt = mnt % 60;
+    // Convert time to 0-59.  
+    mnt = positive_modulo(mnt, 60);
 
     // Flash display to indicate minute being set.
     updateOutsidePixels(Adafruit_NeoPixel::Color(m_red_deger, m_green_deger, m_blue_deger),
@@ -131,6 +129,10 @@ char minuteSelectMode() {
   rtc.setTime(hr, mnt, sc);
 
   return data;
+}
+
+inline int positive_modulo(int i, int n) {
+  return (i % n + n) % n;
 }
 
 void loop() {
@@ -149,10 +151,10 @@ void loop() {
       data = minuteSelectMode();
     }
 
-    // data must be `m` at this point indicating new mode, 
-    // but there may be no more data. No execution path below 
+    // data must be `m` at this point indicating new mode,
+    // but there may be no more data. No execution path below
     // should execute because data is m.
-     
+
     // Indicate which time unit color is changing.
     if (data == 'H' || data == 'M' || data == 'S' || data == 'A')
     {
@@ -232,8 +234,8 @@ void loop() {
   mnt = t.min;
   sc = t.sec;
 
-  // Convert military 24 hour time to 12 hours.
-  hr = (hr + 11) % 12 + 1;
+  // Convert time to 0-11.
+  hr = positive_modulo(hr, 12);
 
   // Update display with colors.
   updateOutsidePixels(Adafruit_NeoPixel::Color(m_red_deger, m_green_deger, m_blue_deger),
