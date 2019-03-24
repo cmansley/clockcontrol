@@ -1,6 +1,7 @@
 
 #include <DS3231.h>
 #include <Adafruit_NeoPixel.h>
+#include <EEPROM.h>
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
@@ -16,35 +17,69 @@ int mnt;
 int sc;
 char data;
 char color_select;
+bool dirty = false;
 
 // Current hour color.
-int h_red_deger = 255;
-int h_green_deger = 0;
-int h_blue_deger = 0;
+uint8_t h_red_deger = 255;
+uint8_t h_green_deger = 0;
+uint8_t h_blue_deger = 0;
 
 // Current minute color.
-int m_red_deger = 0;
-int m_green_deger = 255;
-int m_blue_deger = 0;
+uint8_t m_red_deger = 0;
+uint8_t m_green_deger = 255;
+uint8_t m_blue_deger = 0;
 
 // Current second color.
-int s_red_deger = 255;
-int s_green_deger = 255;
-int s_blue_deger = 0;
+uint8_t s_red_deger = 255;
+uint8_t s_green_deger = 255;
+uint8_t s_blue_deger = 0;
 
 // All other hours color.
-int bk_red = 0;
-int bk_green = 255;
-int bk_blue = 0;
+uint8_t bk_red = 0;
+uint8_t bk_green = 255;
+uint8_t bk_blue = 0;
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel pixels2 = Adafruit_NeoPixel(12, PIN2, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip2 = Adafruit_NeoPixel(12, PIN2, NEO_GRB + NEO_KHZ800);
 
+void loadColors() {
+  h_red_deger = EEPROM.read(0);
+  h_green_deger = EEPROM.read(1);
+  h_blue_deger = EEPROM.read(2);
+  m_red_deger = EEPROM.read(3);
+  m_green_deger = EEPROM.read(4);
+  m_blue_deger = EEPROM.read(5);
+  s_red_deger = EEPROM.read(6);
+  s_green_deger = EEPROM.read(7);
+  s_blue_deger = EEPROM.read(8);
+  bk_red = EEPROM.read(9);
+  bk_green = EEPROM.read(10);
+  bk_blue = EEPROM.read(11);
+}
+
+void updateColors() {
+  EEPROM.update(0, h_red_deger);
+  EEPROM.update(1, h_green_deger);
+  EEPROM.update(2, h_blue_deger);
+  EEPROM.update(3, m_red_deger);
+  EEPROM.update(4, m_green_deger);
+  EEPROM.update(5, m_blue_deger);
+  EEPROM.update(6, s_red_deger);
+  EEPROM.update(7, s_green_deger);
+  EEPROM.update(8, s_blue_deger);
+  EEPROM.update(9, bk_red);
+  EEPROM.update(10, bk_green);
+  EEPROM.update(11, bk_blue);
+}
+
 void setup() {
   Serial.begin(9600);
   rtc.begin();
+
+  // Load colors from eeprom.
+  loadColors();
 
 #if defined (__AVR_ATtiny85__)
   if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
@@ -114,7 +149,7 @@ char minuteSelectMode() {
     {
       mnt--;
     }
-    // Convert time to 0-59.  
+    // Convert time to 0-59.
     mnt = positive_modulo(mnt, 60);
 
     // Flash display to indicate minute being set.
@@ -166,12 +201,15 @@ void loop() {
       switch (data) {
         case 'r':
           bk_red = Serial.parseInt();
+          dirty = true;
           break;
         case 'g':
           bk_green = Serial.parseInt();
+          dirty = true;
           break;
         case 'b':
           bk_blue = Serial.parseInt();
+          dirty = true;
           break;
       }
     }
@@ -181,12 +219,15 @@ void loop() {
       switch (data) {
         case 'r':
           h_red_deger = Serial.parseInt();
+          dirty = true;
           break;
         case 'g':
           h_green_deger = Serial.parseInt();
+          dirty = true;
           break;
         case 'b':
           h_blue_deger = Serial.parseInt();
+          dirty = true;
           break;
       }
     }
@@ -196,12 +237,15 @@ void loop() {
       switch (data) {
         case 'r':
           m_red_deger = Serial.parseInt();
+          dirty = true;
           break;
         case 'g':
           m_green_deger = Serial.parseInt();
+          dirty = true;
           break;
         case 'b':
           m_blue_deger = Serial.parseInt();
+          dirty = true;
           break;
       }
     }
@@ -211,14 +255,23 @@ void loop() {
       switch (data) {
         case 'r':
           s_red_deger = Serial.parseInt();
+          dirty = true;
           break;
         case 'g':
           s_green_deger = Serial.parseInt();
+          dirty = true;
           break;
         case 'b':
           s_blue_deger = Serial.parseInt();
+          dirty = true;
           break;
       }
+    }
+
+    // If the colors have changed, update them in the eeprom.
+    if (dirty) {
+      updateColors();
+      dirty = false;
     }
 
     // Update display with colors.
