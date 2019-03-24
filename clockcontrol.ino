@@ -16,15 +16,27 @@ int mnt;
 int sc;
 char data;
 char color_select;
+
+// Current hour color.
 int h_red_deger = 255;
 int h_green_deger = 0;
 int h_blue_deger = 0;
+
+// Current minute color.
 int m_red_deger = 0;
 int m_green_deger = 255;
 int m_blue_deger = 0;
+
+// Current second color.
 int s_red_deger = 255;
 int s_green_deger = 255;
 int s_blue_deger = 0;
+
+// All other hours color.
+int bk_red = 0;
+int bk_green = 255;
+int bk_blue = 0;
+
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel pixels2 = Adafruit_NeoPixel(12, PIN2, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
@@ -141,27 +153,25 @@ void loop() {
     }
 
     // Indicate which time unit color is changing.
-    if (data == 'H' || data == 'M' || data == 'S')
+    if (data == 'H' || data == 'M' || data == 'S' || data == 'A')
     {
       color_select = data;
     }
 
-    // Play animations.
-    if (data == 'A')
-    {
-      data = ' ';
-      colorWipe(strip.Color(255, 0, 0), 50); // Red
-      colorWipe(strip.Color(0, 255, 0), 50); // Green
-      colorWipe(strip.Color(0, 0, 255), 50); // Blue
-      //colorWipe(strip.Color(0, 0, 0, 255), 50); // White RGBW
-      // Send a theater pixel chase in...
-      theaterChase(strip.Color(127, 127, 127), 50); // White
-      theaterChase(strip.Color(127, 0, 0), 50); // Red
-      theaterChase(strip.Color(0, 0, 127), 50); // Blue
-
-      rainbow(20);
-      rainbowCycle(20);
-      theaterChaseRainbow(50);
+    // If the color selection mode is 'A', change background colors.
+    if ( color_select == 'A') {
+      switch (data) {
+        case 'r':
+          bk_red = Serial.parseInt();
+          break;
+        case 'g':
+          bk_green = Serial.parseInt();
+          break;
+        case 'b':
+          bk_blue = Serial.parseInt();
+          break;
+      }
+      updateHourPixels();
     }
 
     // If the color selection mode is hour, check the data for r, g, b.
@@ -214,7 +224,7 @@ void loop() {
       pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
       pixels.show();
     }
-  }
+  } // End of serial loop.
 
   // Get time from real time clock.
   t = rtc.getTime();
@@ -225,6 +235,13 @@ void loop() {
   // Convert military 24 hour time to 12 hours.
   hr = (hr + 11) % 12 + 1;
 
+  // Update display with colors.
+  updateOutsidePixels();
+  updateHourPixels();
+}
+
+
+void updateOutsidePixels() {
   // Turn off all pixels.
   for (int k = 0; k < 60; k++) {
     pixels.setPixelColor(k, pixels.Color(0, 0, 0));
@@ -240,10 +257,12 @@ void loop() {
   pixels.setPixelColor(sc, pixels.Color(s_red_deger, s_green_deger, s_blue_deger));
   pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
   pixels.show();
+}
 
+void updateHourPixels() {
   // Set all hour pixels to color
   for (int i = 0; i < 12; i++) {
-    pixels2.setPixelColor(i, pixels2.Color(0, 255, 0));
+    pixels2.setPixelColor(i, pixels2.Color(bk_red, bk_green, bk_blue));
   }
 
   // Set the current hour to a different color.
