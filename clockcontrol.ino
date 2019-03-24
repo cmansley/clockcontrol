@@ -61,97 +61,98 @@ void setup() {
   strip2.show();
 }
 
+// This function loops on serial input. When the mode switch `m` arrives, it leaves the function.
+// It returns the character that broke it out of the loop. The real time clock is set by this function.
+char hourSelectMode() {
+  t = rtc.getTime();
+  hr = t.hour;
+  mnt = t.min;
+  sc = t.sec;
+  char data = ' ';
+  while (data != 'm')
+  {
+    data = Serial.read();
+    // Update hour.
+    if (data == '+')
+    {
+      hr++;
+    }
+    if (data == '-')
+    {
+      hr--;
+    }
+    // Convert military 24 hour time to 12 hours.
+    hr = (hr + 11) % 12 + 1;
+
+    // Flash display to indicate hour being set.
+    updateHourPixels(Adafruit_NeoPixel::Color(h_red_deger, h_green_deger, h_blue_deger),
+                     Adafruit_NeoPixel::Color(bk_red, bk_green, bk_blue));
+    delay(100);
+    updateHourPixels(Adafruit_NeoPixel::Color(0, 0, 0),
+                     Adafruit_NeoPixel::Color(bk_red, bk_green, bk_blue));
+    delay(100);
+  }
+  rtc.setTime(hr, mnt, sc);
+  return data;
+}
+
+// This function loops on serial input. When the mode switch `m` arrives, it leaves the function.
+// It returns the character that broke it out of the loop. The real time clock is set by this function.
+char minuteSelectMode() {
+  t = rtc.getTime();
+  hr = t.hour;
+  mnt = t.min;
+  sc = t.sec;
+
+  char data = ' ';
+  while (data != 'm')
+  {
+    data = Serial.read();
+    if (data == '+')
+    {
+      mnt++;
+    }
+    if (data == '-')
+    {
+      mnt--;
+    }
+    // Enforce 0 to 59
+    mnt = mnt % 60;
+
+    // Flash display to indicate minute being set.
+    updateOutsidePixels(Adafruit_NeoPixel::Color(m_red_deger, m_green_deger, m_blue_deger),
+                        Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger));
+    delay(100);
+    updateOutsidePixels(Adafruit_NeoPixel::Color(0, 0, 0),
+                        Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger));
+    delay(100);
+  }
+
+  rtc.setTime(hr, mnt, sc);
+
+  return data;
+}
+
 void loop() {
 
-  while (Serial.available() > 0) // bağlantı kuruluyken
+  while (Serial.available() > 0)
   {
     delay(10);
-    char c = Serial.read();
-    data = c;
+    data = Serial.read();
     if (data == 'm')
     {
-      data = ' ';
-      t = rtc.getTime();
-      hr = t.hour;
-      mnt = t.min;
-      sc = t.sec;
-      while (data != 'm')
-      {
-        data = Serial.read();
-        if (data == '+')
-        {
-          hr++;
-        }
-        if (data == '-')
-        {
-          hr--;
-        }
-        for (int i = 0; i < 12; i++) {
-          pixels2.setPixelColor(i, pixels2.Color(0, 255, 10));
-        }
-        pixels2.show();
-        if (hr >= 12) {
-          hr = hr - 12;
-        }
-        if (hr < 0) {
-          hr = hr + 12;
-        }
-        pixels2.setPixelColor(hr, pixels2.Color(255, 0, 0));
-        pixels2.show();
-        delay(100);
-        pixels2.setPixelColor(hr, pixels2.Color(0, 0, 0));
-        pixels2.show();
-        delay(100);
-      }
-      rtc.setTime(hr, mnt, sc);
-      if (data == 'm')
-      {
-        data = ' ';
-        t = rtc.getTime();
-        hr = t.hour;
-        mnt = t.min;
-        sc = t.sec;
-        while (data != 'm')
-        {
-          data = Serial.read();
-          if (data == '+')
-          {
-            mnt++;
-            if (mnt == 60)
-            {
-              mnt = 0;
-            }
-          }
-          if (data == '-')
-          {
-            if (mnt == 0)
-            {
-              mnt = 60;
-            }
-
-            mnt--;
-          }
-          for (int k = 0; k < 60; k++) {
-            pixels.setPixelColor(k, pixels.Color(0, 0, 0));
-          }
-          for (int k = 0; k < 60; k++) {
-            pixels.setPixelColor(k, pixels.Color(25, 25, 255));
-            k = k + 4;
-          }
-
-          pixels.setPixelColor(mnt, pixels.Color(0, 250, 0));
-          pixels.show();
-          delay(100);
-          pixels.setPixelColor(mnt, pixels.Color(0, 0, 0));
-          pixels.show();
-          delay(100);
-        }
-      }
-
-      rtc.setTime(hr, mnt, sc);
-      data = ' ';
+      data = hourSelectMode();
     }
 
+    if (data == 'm')
+    {
+      data = minuteSelectMode();
+    }
+
+    // data must be `m` at this point indicating new mode, 
+    // but there may be no more data. No execution path below 
+    // should execute because data is m.
+     
     // Indicate which time unit color is changing.
     if (data == 'H' || data == 'M' || data == 'S' || data == 'A')
     {
@@ -159,7 +160,7 @@ void loop() {
     }
 
     // If the color selection mode is 'A', change background colors.
-    if ( color_select == 'A') {
+    if (color_select == 'A') {
       switch (data) {
         case 'r':
           bk_red = Serial.parseInt();
@@ -171,11 +172,10 @@ void loop() {
           bk_blue = Serial.parseInt();
           break;
       }
-      updateHourPixels();
     }
 
     // If the color selection mode is hour, check the data for r, g, b.
-    if ( color_select == 'H') {
+    if (color_select == 'H') {
       switch (data) {
         case 'r':
           h_red_deger = Serial.parseInt();
@@ -187,12 +187,10 @@ void loop() {
           h_blue_deger = Serial.parseInt();
           break;
       }
-      pixels2.setPixelColor(hr, pixels2.Color(h_red_deger, h_green_deger, h_blue_deger));
-      pixels2.show();
     }
 
     // If the color selection mode is minute, check the data for r, g, b.
-    if ( color_select == 'M') {
+    if (color_select == 'M') {
       switch (data) {
         case 'r':
           m_red_deger = Serial.parseInt();
@@ -204,12 +202,10 @@ void loop() {
           m_blue_deger = Serial.parseInt();
           break;
       }
-      pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
-      pixels.show();
     }
 
     // If the color selection mode is minute, check the data for r, g, b.
-    if ( color_select == 'S') {
+    if (color_select == 'S') {
       switch (data) {
         case 'r':
           s_red_deger = Serial.parseInt();
@@ -221,9 +217,13 @@ void loop() {
           s_blue_deger = Serial.parseInt();
           break;
       }
-      pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
-      pixels.show();
     }
+
+    // Update display with colors.
+    updateOutsidePixels(Adafruit_NeoPixel::Color(m_red_deger, m_green_deger, m_blue_deger),
+                        Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger));
+    updateHourPixels(Adafruit_NeoPixel::Color(h_red_deger, h_green_deger, h_blue_deger),
+                     Adafruit_NeoPixel::Color(bk_red, bk_green, bk_blue));
   } // End of serial loop.
 
   // Get time from real time clock.
@@ -236,12 +236,14 @@ void loop() {
   hr = (hr + 11) % 12 + 1;
 
   // Update display with colors.
-  updateOutsidePixels();
-  updateHourPixels();
+  updateOutsidePixels(Adafruit_NeoPixel::Color(m_red_deger, m_green_deger, m_blue_deger),
+                      Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger));
+  updateHourPixels(Adafruit_NeoPixel::Color(h_red_deger, h_green_deger, h_blue_deger),
+                   Adafruit_NeoPixel::Color(bk_red, bk_green, bk_blue));
 }
 
 
-void updateOutsidePixels() {
+void updateOutsidePixels(uint32_t minute_color, uint32_t second_color) {
   // Turn off all pixels.
   for (int k = 0; k < 60; k++) {
     pixels.setPixelColor(k, pixels.Color(0, 0, 0));
@@ -254,19 +256,19 @@ void updateOutsidePixels() {
   }
 
   // Set second and minute pixels to their color.
-  pixels.setPixelColor(sc, pixels.Color(s_red_deger, s_green_deger, s_blue_deger));
-  pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
+  pixels.setPixelColor(sc, second_color);
+  pixels.setPixelColor(mnt, minute_color);
   pixels.show();
 }
 
-void updateHourPixels() {
+void updateHourPixels(uint32_t current, uint32_t other) {
   // Set all hour pixels to color
   for (int i = 0; i < 12; i++) {
-    pixels2.setPixelColor(i, pixels2.Color(bk_red, bk_green, bk_blue));
+    pixels2.setPixelColor(i, other);
   }
 
   // Set the current hour to a different color.
-  pixels2.setPixelColor(hr, pixels2.Color(h_red_deger, h_green_deger, h_blue_deger));
+  pixels2.setPixelColor(hr, current);
   pixels2.show();
 }
 
