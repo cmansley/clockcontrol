@@ -140,18 +140,13 @@ void loop() {
       data = ' ';
     }
 
-    if (data == 'H')
+    // Indicate which time unit color is changing.
+    if (data == 'H' || data == 'M' || data == 'S')
     {
       color_select = data;
     }
-    if (data == 'M')
-    {
-      color_select = data;
-    }
-    if (data == 'S')
-    {
-      color_select = data;
-    }
+
+    // Play animations.
     if (data == 'A')
     {
       data = ' ';
@@ -168,67 +163,59 @@ void loop() {
       rainbowCycle(20);
       theaterChaseRainbow(50);
     }
-    if (data == 'r' && color_select == 'H')
-    {
-      h_red_deger = Serial.parseInt();
-      pixels2.setPixelColor(hr, pixels2.Color(h_red_deger, h_green_deger, h_blue_deger));
-      pixels2.show();
 
-
-    }
-
-    if (data == 'g' && color_select == 'H')
-    { h_green_deger = Serial.parseInt();
-      pixels2.setPixelColor(hr, pixels2.Color(h_red_deger, h_green_deger, h_blue_deger));
-      pixels2.show();
-    }
-    if (data == 'b' && color_select == 'H')
-    {
-      h_blue_deger = Serial.parseInt();
+    // If the color selection mode is hour, check the data for r, g, b.
+    if ( color_select == 'H') {
+      switch (data) {
+        case 'r':
+          h_red_deger = Serial.parseInt();
+          break;
+        case 'g':
+          h_green_deger = Serial.parseInt();
+          break;
+        case 'b':
+          h_blue_deger = Serial.parseInt();
+          break;
+      }
       pixels2.setPixelColor(hr, pixels2.Color(h_red_deger, h_green_deger, h_blue_deger));
       pixels2.show();
     }
 
-    if (data == 'r' && color_select == 'M')
-    {
-      m_red_deger = Serial.parseInt();
+    // If the color selection mode is minute, check the data for r, g, b.
+    if ( color_select == 'M') {
+      switch (data) {
+        case 'r':
+          m_red_deger = Serial.parseInt();
+          break;
+        case 'g':
+          m_green_deger = Serial.parseInt();
+          break;
+        case 'b':
+          m_blue_deger = Serial.parseInt();
+          break;
+      }
       pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
       pixels.show();
     }
 
-    if (data == 'g' && color_select == 'M')
-    { m_green_deger = Serial.parseInt();
+    // If the color selection mode is minute, check the data for r, g, b.
+    if ( color_select == 'S') {
+      switch (data) {
+        case 'r':
+          s_red_deger = Serial.parseInt();
+          break;
+        case 'g':
+          s_green_deger = Serial.parseInt();
+          break;
+        case 'b':
+          s_blue_deger = Serial.parseInt();
+          break;
+      }
       pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
-      pixels.show();
-    }
-
-    if (data == 'b' && color_select == 'M')
-    {
-      m_blue_deger = Serial.parseInt();
-      pixels.setPixelColor(mnt, pixels.Color(m_red_deger, m_green_deger, m_blue_deger));
-      pixels.show();
-    }
-
-    if (data == 'r' && color_select == 'S')
-    {
-      s_red_deger = Serial.parseInt();
-      pixels.setPixelColor(sc, pixels.Color(s_red_deger, s_green_deger, s_blue_deger));
-      pixels.show();
-    }
-
-    if (data == 'g' && color_select == 'S')
-    { s_green_deger = Serial.parseInt();
-      pixels.setPixelColor(sc, pixels.Color(s_red_deger, s_green_deger, s_blue_deger));
-      pixels.show();
-    }
-
-    if (data == 'b' && color_select == 'S')
-    {
-      s_blue_deger = Serial.parseInt();
-      pixels.setPixelColor(sc, pixels.Color(s_red_deger, s_green_deger, s_blue_deger));
       pixels.show();
     }
   }
+
   // Get time from real time clock.
   t = rtc.getTime();
   hr = t.hour;
