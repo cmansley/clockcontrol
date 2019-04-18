@@ -6,8 +6,26 @@
 
 <body>
     <button id="connect" type="button">Connect</button>
+    <button id="mode" type="button">Mode</button>
+    <div>
+        <input type="color" id="hour" name="hour" value="#ff0000">
+        <label for="hour">Hour</label>
+    </div>
+    <div>
+        <input type="color" id="minute" name="minute" value="#ff0000">
+        <label for="minute">Minute</label>
+    </div>
+    <div>
+        <input type="color" id="second" name="second" value="#ff0000">
+        <label for="second">Second</label>
+    </div>
     <script src="js/bluetooth.js"></script>
     <script>
-        document.getElementById("connect").addEventListener("click", onButtonClick);
+        let characteristic = null;
+        document.getElementById("connect").addEventListener("click", async () => { characteristic = await connect() });
+        document.getElementById("mode").addEventListener("click", async () => { await write(characteristic, 'm') })
+        document.getElementById("hour").addEventListener("input", async (event) => { await write(characteristic, "H" + hexToRGBClock(event.target.value)) });
+        document.getElementById("minute").addEventListener("input", async (event) => { await write(characteristic, "M" + hexToRGBClock(event.target.value)) });
+        document.getElementById("second").addEventListener("input", async (event) => { await write(characteristic, "S" + hexToRGBClock(event.target.value)) });
     </script>
 </body>

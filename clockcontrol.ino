@@ -268,18 +268,14 @@ void loop() {
       }
     }
 
-    // If the colors have changed, update them in the eeprom.
-    if (dirty) {
-      updateColors();
-      dirty = false;
-    }
 
-    // Update display with colors.
-    updateOutsidePixels(Adafruit_NeoPixel::Color(m_red_deger, m_green_deger, m_blue_deger),
-                        Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger));
-    updateHourPixels(Adafruit_NeoPixel::Color(h_red_deger, h_green_deger, h_blue_deger),
-                     Adafruit_NeoPixel::Color(bk_red, bk_green, bk_blue));
   } // End of serial loop.
+
+  // If the colors have changed, update them in the eeprom.
+  if (dirty) {
+    updateColors();
+    dirty = false;
+  }
 
   // Get time from real time clock.
   t = rtc.getTime();
