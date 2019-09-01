@@ -20,6 +20,14 @@
         <input type="color" id="second" name="second" value="#ff0000">
         <label for="second">Second</label>
     </div>
+    <div>
+        <input type="color" id="background" name="background" value="#ff0000">
+        <label for="background">Background</label>
+    </div>
+    <div>
+        <input type="color" id="markers" name="markers" value="#ff0000">
+        <label for="markers">Minute Markers</label>
+    </div>
     <script src="js/bluetooth.js"></script>
     <script>
         let characteristic = null;
@@ -29,5 +37,7 @@
         document.getElementById("hour").addEventListener("input", async (event) => { await write(characteristic, "H" + hexToRGBClock(event.target.value)) });
         document.getElementById("minute").addEventListener("input", async (event) => { await write(characteristic, "M" + hexToRGBClock(event.target.value)) });
         document.getElementById("second").addEventListener("input", async (event) => { await write(characteristic, "S" + hexToRGBClock(event.target.value)) });
+        document.getElementById("background").addEventListener("input", async (event) => { await write(characteristic, "B" + hexToRGBClock(event.target.value)) });
+        document.getElementById("markers").addEventListener("input", async (event) => { await write(characteristic, "I" + hexToRGBClock(event.target.value)) });
     </script>
 </body>

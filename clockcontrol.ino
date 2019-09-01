@@ -39,6 +39,11 @@ uint8_t bk_red = 0;
 uint8_t bk_green = 255;
 uint8_t bk_blue = 0;
 
+// Hour indices or markers.
+uint8_t mark_red = 25;
+uint8_t mark_green = 25;
+uint8_t mark_blue = 255;
+
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel pixels2 = Adafruit_NeoPixel(12, PIN2, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
@@ -57,6 +62,9 @@ void loadColors() {
   bk_red = EEPROM.read(9);
   bk_green = EEPROM.read(10);
   bk_blue = EEPROM.read(11);
+  mark_red = EEPROM.read(12);
+  mark_green = EEPROM.read(13);
+  mark_blue = EEPROM.read(14);
 }
 
 void updateColors() {
@@ -72,6 +80,9 @@ void updateColors() {
   EEPROM.update(9, bk_red);
   EEPROM.update(10, bk_green);
   EEPROM.update(11, bk_blue);
+  EEPROM.update(12,   mark_red);
+  EEPROM.update(13, mark_green);
+  EEPROM.update(14, mark_blue);
 }
 
 void setup() {
@@ -154,10 +165,12 @@ char minuteSelectMode() {
 
     // Flash display to indicate minute being set.
     updateOutsidePixels(Adafruit_NeoPixel::Color(m_red_deger, m_green_deger, m_blue_deger),
-                        Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger));
+                        Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger),
+                        Adafruit_NeoPixel::Color(mark_red, mark_green, mark_blue));
     delay(100);
     updateOutsidePixels(Adafruit_NeoPixel::Color(0, 0, 0),
-                        Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger));
+                        Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger),
+                        Adafruit_NeoPixel::Color(mark_red, mark_green, mark_blue));
     delay(100);
   }
 
@@ -201,19 +214,19 @@ void loop() {
     // but there may be no more data. No execution path below
     // should execute because data is m.
 
-    if (data == 'T') 
+    if (data == 'T')
     {
       data = timeSync();
     }
 
     // Indicate which time unit color is changing.
-    if (data == 'H' || data == 'M' || data == 'S' || data == 'A')
+    if (data == 'H' || data == 'M' || data == 'S' || data == 'B' || data == 'I')
     {
       color_select = data;
     }
 
-    // If the color selection mode is 'A', change background colors.
-    if (color_select == 'A') {
+    // If the color selection mode is 'B', change background colors.
+    if (color_select == 'B') {
       switch (data) {
         case 'r':
           bk_red = Serial.parseInt();
@@ -284,6 +297,24 @@ void loop() {
       }
     }
 
+    // If the color selection mode is indices/markers, check the data for r, g, b.
+    if (color_select == 'I') {
+      switch (data) {
+        case 'r':
+          mark_red = Serial.parseInt();
+          dirty = true;
+          break;
+        case 'g':
+          mark_green = Serial.parseInt();
+          dirty = true;
+          break;
+        case 'b':
+          mark_blue = Serial.parseInt();
+          dirty = true;
+          break;
+      }
+    }
+
 
   } // End of serial loop.
 
@@ -304,13 +335,14 @@ void loop() {
 
   // Update display with colors.
   updateOutsidePixels(Adafruit_NeoPixel::Color(m_red_deger, m_green_deger, m_blue_deger),
-                      Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger));
+                      Adafruit_NeoPixel::Color(s_red_deger, s_green_deger, s_blue_deger),
+                      Adafruit_NeoPixel::Color(mark_red, mark_green, mark_blue));
   updateHourPixels(Adafruit_NeoPixel::Color(h_red_deger, h_green_deger, h_blue_deger),
                    Adafruit_NeoPixel::Color(bk_red, bk_green, bk_blue));
 }
 
 
-void updateOutsidePixels(uint32_t minute_color, uint32_t second_color) {
+void updateOutsidePixels(uint32_t minute_color, uint32_t second_color, uint32_t hour_markers_color) {
   // Turn off all pixels.
   for (int k = 0; k < 60; k++) {
     pixels.setPixelColor(k, pixels.Color(0, 0, 0));
@@ -318,7 +350,7 @@ void updateOutsidePixels(uint32_t minute_color, uint32_t second_color) {
 
   // Turn on every 4th mark around outside.
   for (int k = 0; k < 60; k++) {
-    pixels.setPixelColor(k, pixels.Color(25, 25, 255));
+    pixels.setPixelColor(k, hour_markers_color);
     k = k + 4;
   }
 

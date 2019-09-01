@@ -10,9 +10,8 @@
 
 - `m` switches mode 
 - `+` and `-` increment and decrement clock (when in the hour or minute set mode)
-- `A` starts animation mode
-- `H`, `M`, `S` starts the color selection for hour, minute or second
-- `r`, `g`, `b` indicates the RGB channel followed by an integer to indicate value
+- `H`, `M`, `S` starts the color selection for hour, minute or second. `B` starts the background color selection. `I` starts the hour indices or markers color selection.
+  - `r`, `g`, `b` indicates the RGB channel followed by an integer to indicate value
 - `T` indicates the begining of time sync
   - The format for time sync is `HH,MM,SS` where `H`,`M` and `S` are ASCII digits 0-9
   - Since, parseInt is being used the digits may be missing. ex. 1,12,1 is 01:21:01
