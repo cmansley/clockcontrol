@@ -29,3 +29,8 @@ function hexToRGBClock(h) {
     let b = "0x" + h[5] + h[6];
     return "r" + parseInt(r).toString() + "g" + parseInt(g).toString() + "b" + parseInt(b).toString();
 }
+
+function timeToString() {
+    let date = new Date();
+    return "T" + date.getHours().toString() + "," + date.getMinutes().toString() + "," + date.getSeconds().toString();
+}

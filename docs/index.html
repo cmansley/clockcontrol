@@ -6,6 +6,7 @@
 
 <body>
     <button id="connect" type="button">Connect</button>
+    <button id="set" type="button">Set Time</button>
     <button id="mode" type="button">Mode</button>
     <div>
         <input type="color" id="hour" name="hour" value="#ff0000">
@@ -23,6 +24,7 @@
     <script>
         let characteristic = null;
         document.getElementById("connect").addEventListener("click", async () => { characteristic = await connect() });
+        document.getElementById("set").addEventListener("click", async () => { await write(characteristic, timeToString())});
         document.getElementById("mode").addEventListener("click", async () => { await write(characteristic, 'm') })
         document.getElementById("hour").addEventListener("input", async (event) => { await write(characteristic, "H" + hexToRGBClock(event.target.value)) });
         document.getElementById("minute").addEventListener("input", async (event) => { await write(characteristic, "M" + hexToRGBClock(event.target.value)) });

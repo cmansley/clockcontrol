@@ -166,6 +166,17 @@ char minuteSelectMode() {
   return data;
 }
 
+// This function reads serial input. The real time clock is set by this function.
+char timeSync() {
+  hr = positive_modulo(Serial.parseInt(), 12);
+  data = Serial.read();
+  mnt = positive_modulo(Serial.parseInt(), 60);
+  data = Serial.read();
+  sc = positive_modulo(Serial.parseInt(), 60);
+  rtc.setTime(hr, mnt, sc);
+  return data;
+}
+
 inline int positive_modulo(int i, int n) {
   return (i % n + n) % n;
 }
@@ -189,6 +200,11 @@ void loop() {
     // data must be `m` at this point indicating new mode,
     // but there may be no more data. No execution path below
     // should execute because data is m.
+
+    if (data == 'T') 
+    {
+      data = timeSync();
+    }
 
     // Indicate which time unit color is changing.
     if (data == 'H' || data == 'M' || data == 'S' || data == 'A')

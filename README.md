@@ -13,6 +13,9 @@
 - `A` starts animation mode
 - `H`, `M`, `S` starts the color selection for hour, minute or second
 - `r`, `g`, `b` indicates the RGB channel followed by an integer to indicate value
+- `T` indicates the begining of time sync
+  - The format for time sync is `HH,MM,SS` where `H`,`M` and `S` are ASCII digits 0-9
+  - Since, parseInt is being used the digits may be missing. ex. 1,12,1 is 01:21:01
 
 - Examples:
   - m+m+--
